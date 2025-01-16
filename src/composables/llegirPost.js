@@ -1,27 +1,38 @@
 import { ref } from "vue";
 
-const URL = "https://jsonplaceholder.typicode.com/posts";
+const BASE_URL = "https://jsonplaceholder.typicode.com";
 
 export default function llegirPost() {
-    // array reactiu para guardar mis posts
+    
     const posts = ref([]);
     const post = ref(null);
     const user = ref(null);
 
-    // funció per llegir els posts
     const llegirTots = async () => {
-        const response = await fetch(URL);
-        posts.value = await response.json();
+        try {
+            const response = await fetch(`${BASE_URL}/posts`);
+            posts.value = await response.json();
+        } catch (error) {
+            console.error("Error al cargar los posts:", error);
+        }
     };
 
-    // funció per llegir els posts per ID
     const llegirPostID = async (id) => {
-        const response = await fetch(`${URL}/${id}`);
-        post.value = await response.json();
-        
-        // obtenció de l'usuari relacionat amb el post
-        const userResponse = await fetch(`${URL}/users/${post.value.userId}`);
-        user.value = await userResponse.json();
+        try {
+            const response = await fetch(`${BASE_URL}/posts/${id}`);
+            post.value = await response.json();
+
+            if (post.value && post.value.userId) {
+                const userResponse = await fetch(
+                    `${BASE_URL}/users/${post.value.userId}`
+                );
+                user.value = await userResponse.json();
+            } else {
+                console.error("No hay usuario en el post!");
+            }
+        } catch (error) {
+            console.error("Error al cargar el post", error);
+        }
     };
 
     return {
@@ -32,7 +43,3 @@ export default function llegirPost() {
         llegirPostID,
     };
 }
-
-
-
-
